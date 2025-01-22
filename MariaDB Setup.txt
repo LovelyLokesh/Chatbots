@@ -1,0 +1,21 @@
+1. Install MariaDB on Ubuntu
+sudo apt update
+sudo apt install mariadb-server
+
+2. Secure MariaDB
+sudo mysql_secure_installation
+
+3.login
+sudo mariadb
+
+
+4. Create a New Database and User
+CREATE DATABASE sla_metering_db;
+CREATE USER 'user'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON sla_metering_db.* TO 'user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+5. Create a Test Table
+Log back into MariaDB with your new user and create a test table:
+mariadb -u user -p

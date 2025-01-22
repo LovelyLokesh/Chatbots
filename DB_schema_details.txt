@@ -1,0 +1,116 @@
+CREATE TABLE metering_org (
+    id INT PRIMARY KEY,
+    org_name VARCHAR(1000),
+    LLM_key VARCHAR(1000),
+    LLM VARCHAR(1000),
+    partition_id VARCHAR(1000)
+);
+
+ALTER TABLE metering_org MODIFY id INT AUTO_INCREMENT;
+
+ALTER TABLE metering_org ADD CONSTRAINT unique_org_name_partition UNIQUE (org_name, partition_id);
+
+
+
+
+CREATE TABLE metering_register (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    time_in DATETIME,
+    time_out DATETIME,
+    query TEXT,
+    response LONGTEXT,
+    token_count_in INT,
+    token_count_out INT,
+    org VARCHAR(1000),
+    error VARCHAR(1000),
+    event_name VARCHAR(1000),
+    org_id INT,
+    partition_id VARCHAR(1000), 
+    origin_name VARCHAR(1000),
+    FOREIGN KEY (org_id) REFERENCES metering_org(id)
+);
+
+-- to get the name of foreign key constarint
+SHOW CREATE TABLE metering_register;
+
+
+-- First, drop the existing foreign key constraint (if any)
+ALTER TABLE metering_register DROP FOREIGN KEY metering_register_ibfk_1;
+
+
+--- add foreign key constraint with ON-Delete Cascade
+ALTER TABLE metering_register
+ADD CONSTRAINT fk_org_id
+FOREIGN KEY (org_id) REFERENCES metering_org(id)
+ON DELETE CASCADE;
+
+
+
+
+
+CREATE TABLE gen_ai_prompts (
+    prompt TEXT,
+    date DATETIME,
+    latest BOOLEAN,
+    application TEXT,
+    model TEXT,
+    org_name TEXT,
+    partition_id TEXT
+);
+
+
+---- add unique key constraint(org_name,partition_id,application)
+ALTER TABLE gen_ai_prompts
+ADD CONSTRAINT unique_org_partition_application UNIQUE (org_name, partition_id, application);
+
+
+
+MariaDB [sla_metering_db]> SHOW COLUMNS FROM metering_register;
++-----------------+---------------+------+-----+---------+----------------+
+| Field           | Type          | Null | Key | Default | Extra          |
++-----------------+---------------+------+-----+---------+----------------+
+| id              | int(11)       | NO   | PRI | NULL    | auto_increment |
+| time_in         | datetime      | YES  |     | NULL    |                |
+| time_out        | datetime      | YES  |     | NULL    |                |
+| query           | text          | YES  |     | NULL    |                |
+| response        | longtext      | YES  |     | NULL    |                |
+| token_count_in  | int(11)       | YES  |     | NULL    |                |
+| token_count_out | int(11)       | YES  |     | NULL    |                |
+| org             | varchar(1000) | YES  |     | NULL    |                |
+| error           | varchar(1000) | YES  |     | NULL    |                |
+| event_name      | varchar(1000) | YES  |     | NULL    |                |
+| org_id          | int(11)       | YES  | MUL | NULL    |                |
+| partition_id    | varchar(1000) | YES  |     | NULL    |                |
+| origin_name     | varchar(1000) | YES  |     | NULL    |                |
++-----------------+---------------+------+-----+---------+----------------+
+
+
+MariaDB [sla_metering_db]> SHOW COLUMNS FROM metering_org;
++--------------+---------------+------+-----+---------+----------------+
+| Field        | Type          | Null | Key | Default | Extra          |
++--------------+---------------+------+-----+---------+----------------+
+| id           | int(11)       | NO   | PRI | NULL    | auto_increment |
+| org_name     | varchar(1000) | YES  | MUL | NULL    |                |
+| LLM_key      | varchar(1000) | YES  |     | NULL    |                |
+| LLM          | varchar(1000) | YES  |     | NULL    |                |
+| partition_id | varchar(1000) | YES  |     | NULL    |                |
++--------------+---------------+------+-----+---------+----------------+
+
+
+
+MariaDB [sla_metering_db]> SHOW COLUMNS FROM gen_ai_prompts;
++--------------+------------+------+-----+---------+-------+
+| Field        | Type       | Null | Key | Default | Extra |
++--------------+------------+------+-----+---------+-------+
+| prompt       | text       | YES  |     | NULL    |       |
+| date         | datetime   | YES  |     | NULL    |       |
+| latest       | tinyint(1) | YES  |     | NULL    |       |
+| application  | text       | YES  |     | NULL    |       |
+| model        | text       | YES  |     | NULL    |       |
+| org_name     | text       | YES  | MUL | NULL    |       |
+| partition_id | text       | YES  |     | NULL    |       |
++--------------+------------+------+-----+---------+-------+
+
+
+
+
